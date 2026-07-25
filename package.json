@@ -5,10 +5,11 @@
   "description": "API server for Fasal AI agricultural advisory",
   "type": "module",
   "main": "src/server.js",
-  "scripts": {
-    "dev": "node --watch src/server.js",
-    "start": "node src/server.js"
-  },
+ "scripts": {
+  "dev": "node --watch src/server.js",
+  "start": "node src/server.js",
+  "build": "npx prisma generate"
+},
   "dependencies": {
     "@prisma/client": "6.19.3",
     "bcryptjs": "^3.0.2",
