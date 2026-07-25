@@ -7,6 +7,8 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql"
   }),
+  secret: env.betterAuthSecret,
+  baseURL: env.betterAuthUrl,
   trustedOrigins: [env.frontendUrl],
   emailAndPassword: {
     enabled: true,

@@ -1,11 +1,26 @@
 import { Resend } from 'resend'
+import { env } from '../config/env.js'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+let resend = null
 
-const FROM_ADDRESS = process.env.RESEND_FROM_EMAIL || 'FasalAI <onboarding@resend.dev>'
+const getResend = () => {
+  if (!env.resendApiKey) {
+    throw new Error(
+      'RESEND_API_KEY is not set. Add it to your environment to send emails.'
+    )
+  }
+
+  if (!resend) {
+    resend = new Resend(env.resendApiKey)
+  }
+
+  return resend
+}
+
+const FROM_ADDRESS = env.resendFromEmail
 
 export const sendVerificationEmail = async (email, otp) => {
-  const { data, error } = await resend.emails.send({
+  const { data, error } = await getResend().emails.send({
     from: FROM_ADDRESS,
     to: email,
     subject: 'Your FasalAI Verification Code',
