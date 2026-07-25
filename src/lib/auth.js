@@ -9,11 +9,25 @@ export const auth = betterAuth({
   }),
   secret: env.betterAuthSecret,
   baseURL: env.betterAuthUrl,
-  trustedOrigins: env.frontendOrigins,
+  trustedOrigins: [
+    ...env.frontendOrigins,
+    ...env.trustedOriginPatterns,
+  ],
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false
   },
+  // Cross-site cookies needed when frontend (Vercel) and API (Railway) differ
+  ...(env.nodeEnv === 'production'
+    ? {
+        advanced: {
+          defaultCookieAttributes: {
+            sameSite: 'none',
+            secure: true,
+          },
+        },
+      }
+    : {}),
   session: {
     expiresIn: 60 * 60 * 24 * 7,        // 7 days
     updateAge: 60 * 60 * 24,             // refresh every 1 day
