@@ -12,7 +12,7 @@ import { notFound, errorHandler } from './middleware/errorHandler.js'
 const app = express()
 
 app.use(cors({
-  origin: 'http://localhost:5173',  // Vite default port
+  origin: env.frontendUrl,
   credentials: true
 }))
 
