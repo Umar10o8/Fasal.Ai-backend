@@ -9,7 +9,7 @@ export const auth = betterAuth({
   }),
   secret: env.betterAuthSecret,
   baseURL: env.betterAuthUrl,
-  trustedOrigins: [env.frontendUrl],
+  trustedOrigins: env.frontendOrigins,
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false

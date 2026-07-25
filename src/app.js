@@ -12,8 +12,15 @@ import { notFound, errorHandler } from './middleware/errorHandler.js'
 const app = express()
 
 app.use(cors({
-  origin: env.frontendUrl,
-  credentials: true
+  origin(origin, callback) {
+    // Non-browser clients (health checks, curl) send no Origin
+    if (!origin || env.frontendOrigins.includes(origin)) {
+      callback(null, true)
+      return
+    }
+    callback(null, false)
+  },
+  credentials: true,
 }))
 
 // Better Auth handles all /api/auth/* routes automatically
