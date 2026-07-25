@@ -26,7 +26,8 @@ export const env = {
   frontendOrigins: [...new Set([
     ...frontendOrigins,
     ...defaultDevOrigins,
-    // Known production frontend (also set FRONTEND_URL on Railway)
+    // Known production frontends (also set FRONTEND_URL on Railway)
+    'https://fasal-ai-lemon.vercel.app',
     'https://fasal-ai-one.vercel.app',
   ])],
   /** Better Auth supports wildcards like https://*.vercel.app */
