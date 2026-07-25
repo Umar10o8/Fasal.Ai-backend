@@ -2,7 +2,7 @@ import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-const FROM_ADDRESS = process.env.EMAIL_FROM || 'FasalAI <onboarding@resend.dev>'
+const FROM_ADDRESS = process.env.RESEND_FROM_EMAIL || 'FasalAI <onboarding@resend.dev>'
 
 export const sendVerificationEmail = async (email, otp) => {
   const { data, error } = await resend.emails.send({

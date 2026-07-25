@@ -8,14 +8,7 @@ export function notFound(req, res, next) {
 export function errorHandler(err, req, res, next) {
   console.error(err)
 
-  if (err.name === 'ValidationError') {
-    const message = Object.values(err.errors)
-      .map((e) => e.message)
-      .join(', ')
-    return res.status(400).json({ success: false, message })
-  }
-
-  if (err.code === 11000) {
+  if (err.code === 'P2002') {
     return res.status(409).json({
       success: false,
       message: 'Email is already registered',

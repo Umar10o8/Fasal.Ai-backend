@@ -1,5 +1,16 @@
-import { User } from '../models/User.js'
+import bcrypt from 'bcryptjs'
+import { prisma } from '../lib/prisma.js'
 import { signToken } from '../utils/token.js'
+
+function toSafeUser(user) {
+  return {
+    id: user.id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    createdAt: user.createdAt,
+  }
+}
 
 export async function signup(req, res, next) {
   try {
@@ -12,7 +23,20 @@ export async function signup(req, res, next) {
       })
     }
 
-    const existing = await User.findOne({ email: email.toLowerCase().trim() })
+    if (String(password).length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 6 characters',
+      })
+    }
+
+    const normalizedEmail = email.toLowerCase().trim()
+    const trimmedFirstName = firstName.trim()
+    const trimmedLastName = lastName.trim()
+
+    const existing = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    })
     if (existing) {
       return res.status(409).json({
         success: false,
@@ -20,20 +44,37 @@ export async function signup(req, res, next) {
       })
     }
 
-    const user = await User.create({
-      firstName,
-      lastName,
-      email,
-      password,
+    const hashedPassword = await bcrypt.hash(password, 12)
+
+    const user = await prisma.$transaction(async (tx) => {
+      const created = await tx.user.create({
+        data: {
+          name: `${trimmedFirstName} ${trimmedLastName}`,
+          firstName: trimmedFirstName,
+          lastName: trimmedLastName,
+          email: normalizedEmail,
+        },
+      })
+
+      await tx.account.create({
+        data: {
+          userId: created.id,
+          accountId: created.id,
+          providerId: 'credential',
+          password: hashedPassword,
+        },
+      })
+
+      return created
     })
 
-    const token = signToken(user._id)
+    const token = signToken(user.id)
 
     res.status(201).json({
       success: true,
       message: 'Account created successfully',
       data: {
-        user: user.toSafeJSON(),
+        user: toSafeUser(user),
         token,
       },
     })
@@ -53,21 +94,34 @@ export async function signin(req, res, next) {
       })
     }
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() }).select('+password')
-    if (!user || !(await user.comparePassword(password))) {
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase().trim() },
+      include: {
+        accounts: {
+          where: { providerId: 'credential' },
+          take: 1,
+        },
+      },
+    })
+
+    const account = user?.accounts?.[0]
+    const passwordValid =
+      account?.password && (await bcrypt.compare(password, account.password))
+
+    if (!user || !passwordValid) {
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password',
       })
     }
 
-    const token = signToken(user._id)
+    const token = signToken(user.id)
 
     res.json({
       success: true,
       message: 'Signed in successfully',
       data: {
-        user: user.toSafeJSON(),
+        user: toSafeUser(user),
         token,
       },
     })
@@ -79,6 +133,6 @@ export async function signin(req, res, next) {
 export async function me(req, res) {
   res.json({
     success: true,
-    data: { user: req.user.toSafeJSON() },
+    data: { user: toSafeUser(req.user) },
   })
 }

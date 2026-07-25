@@ -1,9 +1,7 @@
 import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
-import { PrismaClient } from "@prisma/client"
 import { env } from "../config/env.js"
-
-const prisma = new PrismaClient()
+import { prisma } from "./prisma.js"
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {

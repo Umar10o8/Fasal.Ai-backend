@@ -1,9 +1,8 @@
 import express from 'express'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '../lib/prisma.js'
 import { sendVerificationEmail } from '../lib/email.js'
 
 const router = express.Router()
-const prisma = new PrismaClient()
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
 
