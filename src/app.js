@@ -10,6 +10,11 @@ import { notFound, errorHandler } from './middleware/errorHandler.js'
 
 const app = express()
 
+// Railway healthchecks often hit `/` — must respond before any proxy timeout / restart loop
+app.get('/', (_req, res) => {
+  res.status(200).type('text').send('ok')
+})
+
 // Explicit CORS so headers apply even when Better Auth's node handler writes the response
 app.use((req, res, next) => {
   const origin = req.headers.origin

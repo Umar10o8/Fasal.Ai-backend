@@ -7,6 +7,14 @@ const parseOrigins = (value) =>
     .split(',')
     .map((origin) => origin.trim().replace(/\/$/, ''))
     .filter(Boolean)
+    .map((origin) => {
+      // FRONTEND_URL must be a full origin (scheme + host). Bare hosts break CORS matching.
+      if (/^https?:\/\//i.test(origin)) return origin
+      if (origin.includes('localhost') || origin.startsWith('127.')) {
+        return `http://${origin}`
+      }
+      return `https://${origin}`
+    })
 
 const frontendOrigins = parseOrigins(process.env.FRONTEND_URL)
 const defaultDevOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173']
