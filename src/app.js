@@ -10,6 +10,12 @@ import { notFound, errorHandler } from './middleware/errorHandler.js'
 
 const app = express()
 
+// Helps diagnose Railway 502s: if this never appears when you curl the public URL, traffic is not reaching the container (port/domain mismatch).
+app.use((req, _res, next) => {
+  console.log(`[req] ${req.method} ${req.url}`)
+  next()
+})
+
 // Railway healthchecks often hit `/` — must respond before any proxy timeout / restart loop
 app.get('/', (_req, res) => {
   res.status(200).type('text').send('ok')
