@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs'
 import { prisma } from '../lib/prisma.js'
+import { sendVerificationEmail } from '../lib/email.js'
 import { signToken } from '../utils/token.js'
 
 function toSafeUser(user) {
@@ -10,6 +11,10 @@ function toSafeUser(user) {
     email: user.email,
     createdAt: user.createdAt,
   }
+}
+
+function generateOTP() {
+  return Math.floor(100000 + Math.random() * 900000).toString()
 }
 
 export async function signup(req, res, next) {
@@ -68,14 +73,31 @@ export async function signup(req, res, next) {
       return created
     })
 
+    const otp = generateOTP()
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000)
+
+    await prisma.oTPVerification.upsert({
+      where: { email: normalizedEmail },
+      update: { otp, expiresAt, verified: false },
+      create: { email: normalizedEmail, otp, expiresAt, verified: false },
+    })
+
+    const emailResult = await sendVerificationEmail(normalizedEmail, otp)
+
     const token = signToken(user.id)
 
     res.status(201).json({
       success: true,
-      message: 'Account created successfully',
+      message: emailResult.emailSent
+        ? 'Account created successfully. Please verify your email using the code sent to your inbox.'
+        : 'Account created successfully. Your verification code was generated, but email delivery is unavailable right now. Use the code shown in the app to continue.',
       data: {
         user: toSafeUser(user),
         token,
+        verification: {
+          emailSent: emailResult.emailSent,
+          otp: emailResult.debugCode,
+        },
       },
     })
   } catch (err) {

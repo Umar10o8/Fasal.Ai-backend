@@ -8,11 +8,13 @@ const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
 
 // POST /api/otp/send
 router.post('/send', async (req, res) => {
+  let otp = null
+
   try {
     const { email } = req.body
     if (!email) return res.status(400).json({ message: 'Email required' })
 
-    const otp = generateOTP()
+    otp = generateOTP()
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000)
 
     await prisma.oTPVerification.upsert({
@@ -21,11 +23,24 @@ router.post('/send', async (req, res) => {
       create: { email, otp, expiresAt, verified: false }
     })
 
-    await sendVerificationEmail(email, otp)
+    const result = await sendVerificationEmail(email, otp)
 
-    res.status(200).json({ message: 'OTP sent successfully' })
+    res.status(200).json({
+      message: result.emailSent
+        ? 'OTP sent successfully'
+        : 'OTP generated. Email delivery is unavailable right now, so use the code below to continue.',
+      otp: result.debugCode,
+      emailSent: result.emailSent,
+    })
   } catch (err) {
     console.error(err)
+    if (otp) {
+      return res.status(200).json({
+        message: 'OTP generated. Email delivery is unavailable right now, so use the code below to continue.',
+        otp,
+        emailSent: false,
+      })
+    }
     res.status(500).json({ message: 'Failed to send OTP' })
   }
 })
