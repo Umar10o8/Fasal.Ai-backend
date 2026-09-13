@@ -1,4 +1,4 @@
-# Fasal AI Backend
+# Fasal AI Backend.
 
 API server for the Fasal AI agricultural advisory app.
 
