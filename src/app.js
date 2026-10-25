@@ -6,6 +6,7 @@ import { auth } from './lib/auth.js'
 import rootRoutes from './routes/index.js'
 import authRoutes from './routes/authRoutes.js'
 import otpRoutes from './routes/otpRoutes.js'
+import fieldRoutes from './routes/fieldRoutes.js'
 import { notFound, errorHandler } from './middleware/errorHandler.js'
 
 const app = express()
@@ -59,6 +60,7 @@ app.use(morgan(env.nodeEnv === 'production' ? 'combined' : 'dev'))
 app.use('/api', rootRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/otp', otpRoutes)
+app.use('/api/fields', fieldRoutes)
 
 app.use(notFound)
 app.use(errorHandler)

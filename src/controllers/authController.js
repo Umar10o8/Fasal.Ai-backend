@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs'
 import { prisma } from '../lib/prisma.js'
 import { sendVerificationEmail } from '../lib/email.js'
+import { env } from '../config/env.js'
 import { signToken } from '../utils/token.js'
 
 function toSafeUser(user) {
@@ -96,7 +97,9 @@ export async function signup(req, res, next) {
         token,
         verification: {
           emailSent: emailResult.emailSent,
-          otp: emailResult.debugCode,
+          ...(env.nodeEnv !== 'production' && emailResult.debugCode
+            ? { otp: emailResult.debugCode }
+            : {}),
         },
       },
     })

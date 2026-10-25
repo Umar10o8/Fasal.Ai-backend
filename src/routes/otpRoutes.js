@@ -1,6 +1,7 @@
 import express from 'express'
 import { prisma } from '../lib/prisma.js'
 import { sendVerificationEmail } from '../lib/email.js'
+import { env } from '../config/env.js'
 
 const router = express.Router()
 
@@ -25,22 +26,18 @@ router.post('/send', async (req, res) => {
 
     const result = await sendVerificationEmail(email, otp)
 
-    res.status(200).json({
+    const response = {
       message: result.emailSent
         ? 'OTP sent successfully'
-        : 'OTP generated. Email delivery is unavailable right now, so use the code below to continue.',
-      otp: result.debugCode,
+        : 'Verification code generated, but email delivery failed. Check the mail provider and verified sender configuration.',
       emailSent: result.emailSent,
-    })
+    }
+    if (env.nodeEnv !== 'production' && result.debugCode) {
+      response.otp = result.debugCode
+    }
+    res.status(200).json(response)
   } catch (err) {
     console.error(err)
-    if (otp) {
-      return res.status(200).json({
-        message: 'OTP generated. Email delivery is unavailable right now, so use the code below to continue.',
-        otp,
-        emailSent: false,
-      })
-    }
     res.status(500).json({ message: 'Failed to send OTP' })
   }
 })
