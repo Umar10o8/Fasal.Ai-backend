@@ -7,6 +7,9 @@ import rootRoutes from './routes/index.js'
 import authRoutes from './routes/authRoutes.js'
 import otpRoutes from './routes/otpRoutes.js'
 import fieldRoutes from './routes/fieldRoutes.js'
+import fertilizerRoutes from './routes/fertilizerRoutes.js'
+import weatherRoutes from './routes/weatherRoutes.js'
+import analyticsRoutes from './routes/analyticsRoutes.js'
 import { notFound, errorHandler } from './middleware/errorHandler.js'
 
 const app = express()
@@ -61,6 +64,9 @@ app.use('/api', rootRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/otp', otpRoutes)
 app.use('/api/fields', fieldRoutes)
+app.use('/api/fertilizer', fertilizerRoutes)
+app.use('/api/weather', weatherRoutes)
+app.use('/api/analytics', analyticsRoutes)
 
 app.use(notFound)
 app.use(errorHandler)

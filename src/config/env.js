@@ -31,6 +31,8 @@ export const env = {
   resendApiKey: process.env.RESEND_API_KEY,
   resendFromEmail: process.env.RESEND_FROM_EMAIL || 'FasalAI <onboarding@resend.dev>',
   frontendUrl: frontendOrigins[0] || defaultDevOrigins[0],
+  /** Internal Python ML service (fasal.ai-ml); never called by the frontend directly. */
+  fertilizerMlServiceUrl: (process.env.FERTILIZER_ML_SERVICE_URL || 'http://127.0.0.1:8000').replace(/\/$/, ''),
   frontendOrigins: [...new Set([
     ...frontendOrigins,
     ...defaultDevOrigins,

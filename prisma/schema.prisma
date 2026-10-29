@@ -9,34 +9,57 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
-  image         String?
-  firstName     String?
-  lastName      String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts      Account[]
-  fields        FieldRecord[]
+  id                        String                     @id @default(cuid())
+  name                      String
+  email                     String                     @unique
+  emailVerified             Boolean                    @default(false)
+  image                     String?
+  firstName                 String?
+  lastName                  String?
+  createdAt                 DateTime                   @default(now())
+  updatedAt                 DateTime                   @updatedAt
+  sessions                  Session[]
+  accounts                  Account[]
+  fields                    FieldRecord[]
+  fertilizerRecommendations FertilizerRecommendation[]
 }
 
 model FieldRecord {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   name         String
   crop         String
   area         Float
-  areaUnit     String   @default("acre")
+  areaUnit     String    @default("acre")
   location     String?
   season       String?
   plantingDate DateTime?
   notes        String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([userId, createdAt])
+}
+
+/// One fertilizer recommendation a user asked for: the model's input and its answer.
+/// Feeds the Analytics page (history, counts per fertilizer and crop, weekly activity).
+model FertilizerRecommendation {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// The 19 model inputs exactly as sent to the ML service.
+  input       Json
+  /// The recommended class (e.g. "Urea") and the model's top 3 [{ fertilizer, probability }].
+  recommended String
+  top3        Json
+  /// Probability of the recommended class, 0..1.
+  confidence  Float
+  /// Copied out of `input` so history can be grouped without reading the JSON.
+  crop        String
+  season      String
+  region      String
+  createdAt   DateTime @default(now())
 
   @@index([userId, createdAt])
 }
